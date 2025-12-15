@@ -21,7 +21,7 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    @Value("secret.key")
+    @Value("${secret.key}")
     private String SECRET_KEY;
 
     /**
