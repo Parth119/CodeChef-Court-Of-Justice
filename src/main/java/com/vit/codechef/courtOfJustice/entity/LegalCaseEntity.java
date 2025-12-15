@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * The type Legal case entity.
  */
@@ -14,24 +16,40 @@ import lombok.Setter;
 @Table(name = "cases")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class LegalCaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String argument; // The plaintext argument
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String argumentDescription; // The plaintext argument
 
-    private String evidenceUrl; // Path to uploaded file
+    private String evidenceUrl; // Path to uploaded file (optional)
 
     @Enumerated(EnumType.STRING)
-    private ServiceConstants.CaseStatus status = ServiceConstants.CaseStatus.PENDING; // Default to Pending for Judge review
+    @Column(nullable = false)
+    private ServiceConstants.CaseStatus status = ServiceConstants.CaseStatus.PENDING;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private UserEntity owner; // The Plaintiff or Defendant
+    // Relationship: Many cases can belong to one User (Defendant/Plaintiff)
+    @ManyToOne(fetch = FetchType.EAGER) // Eager loading helps fetch username easily
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity submittedBy;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    /**
+     * On create.
+     */
+// Automatically set the timestamp when the case is first saved
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
